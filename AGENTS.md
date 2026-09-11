@@ -14,19 +14,18 @@ Este bloque manda sobre los archivos adjuntos. El stack y el rol salen de AQUÍ,
 Desarrollar una API REST empresarial con Spring Boot 3 para la gestión de productos y pedidos en un e-commerce. El sistema debe incluir: arquitectura en capas con controladores REST, servicios de negocio y repositorios JPA; modelado de datos con entidades Product, Order y Customer usando relaciones OneToMany y ManyToMany con Hibernate; autenticación y autorización basada en JWT con Spring Security, incluyendo roles de ADMIN y USER con acceso diferenciado por endpoint; documentación automática con OpenAPI 3.0 y Swagger UI accesible en /api-docs; manejo centralizado de errores con @ControllerAdvice y respuestas estandarizadas en formato JSON; validación de entradas con Bean Validation usando @Valid, @NotNull y @Size; paginación y ordenamiento de resultados en los endpoints de listado usando Pageable; pruebas unitarias con JUnit 5 y Mockito cubriendo la capa de servicio al menos al 80%; pruebas de integración con @SpringBootTest verificando los flujos principales; y containerización con Docker usando Dockerfile multi-stage optimizado para producción. El desarrollador debe implementar el módulo completo desde la capa de persistencia hasta los controladores REST, aplicando principios SOLID y clean code en cada capa.
 
 ### Reto
-- Tema: spring-boot-enterprise-architecture
-- Seniority: advanced-l2
+- Tema: Arquitectura Empresarial con Spring Boot
+- Seniority: junior-l2
 - Tipo: practical
-- Título: Diseño y Desarrollo de una API REST Empresarial con Spring Boot
-- Tiempo estimado: 30 horas
+- Título: Desarrollo de una API REST Empresarial para e-Commerce
+- Tiempo estimado: 20 horas
 
 ### Fases (trabajo del HUMANO — PROHIBIDO completarlas)
 No implementes estos entregables. Dejalos como hueco pedagógico. El asistente solo materializa el proyecto arrancable para que el participante pueda trabajar.
-- Fase 1: Modelado de Datos — objetivo: Definir y estructurar las entidades del dominio para la gestión de productos, pedidos y clientes. — entregable (NO resolver): Modelo de datos con entidades y relaciones definidas.
-- Fase 2: Autenticación y Autorización — objetivo: Implementar la autenticación basada en JWT y la gestión de roles para la API. — entregable (NO resolver): Configuración de autenticación y autorización con JWT y Spring Security.
-- Fase 3: Documentación y Manejo de Errores — objetivo: Documentar la API usando OpenAPI 3.0 y Swagger UI, y manejar los errores de manera centralizada. — entregable (NO resolver): Documentación de la API con OpenAPI 3.0 y Swagger UI, y manejo centralizado de errores.
-- Fase 4: Paginación y Ordenamiento — objetivo: Implementar la paginación y el ordenamiento de resultados en los endpoints de listado. — entregable (NO resolver): Implementación de paginación y ordenamiento en los endpoints de listado.
-- Fase 5: Pruebas y Containerización — objetivo: Implementar pruebas unitarias y de integración, y containerizar la aplicación con Docker. — entregable (NO resolver): Pruebas unitarias y de integración implementadas, y aplicación containerizada con Docker.
+- Fase 1: Modelado de Datos y Autenticación — objetivo: Definir y modelar las entidades Product, Order y Customer, e implementar la autenticación y autorización basada en JWT. — entregable (NO resolver): Modelo de datos completo y sistema de autenticación y autorización funcional.
+- Fase 2: Implementación de Servicios y Controladores REST — objetivo: Implementar los servicios de negocio y los controladores REST para las operaciones CRUD en productos y pedidos. — entregable (NO resolver): Servicios de negocio y controladores REST funcionales para las operaciones CRUD.
+- Fase 3: Documentación y Manejo de Errores — objetivo: Proveer documentación automática con OpenAPI 3.0 y manejar los errores de forma centralizada. — entregable (NO resolver): Documentación automática de la API y manejo centralizado de errores funcional.
+- Fase 4: Pruebas y Containerización — objetivo: Implementar pruebas unitarias y de integración, y containerizar la aplicación para producción. — entregable (NO resolver): Pruebas unitarias y de integración completas, y aplicación containerizada para producción.
 
 Eres un asistente experto en análisis, corrección y generación de archivos de cualquier tipo:
 código fuente, documentación, hojas de cálculo, documentos Word, configuraciones, entre otros.
@@ -163,503 +162,178 @@ El participante que recibirá este proyecto los debe encontrar y resolver él mi
 INPUT
 Aquí está la cadena con los archivos:
 
-package com.example.api;
+src/main/java/com/ecommerce/ECommerceApplication.java
+package com.ecommerce;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ApiApplication {
+public class ECommerceApplication {
     public static void main(String[] args) {
-        SpringApplication.run(ApiApplication.class, args);
+        SpringApplication.run(ECommerceApplication.class, args);
     }
 }
-// === ARCHIVO: src/main/java/com/example/api/ApiApplication.java ===
 
-package com.example.api.controller;
+// === ARCHIVO: src/main/java/com/ecommerce/model/Product.java ===
+package com.ecommerce.model;
 
-import com.example.api.dto.ProductDTO;
-import com.example.api.service.ProductService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import java.util.List;
+
+@Entity
+public class Product {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @NotNull
+    private String name;
+
+    @NotNull
+    private Double price;
+
+    @OneToMany(mappedBy = "product")
+    private List<Order> orders;
+
+    // Getters and setters
+}
+
+// === ARCHIVO: src/main/java/com/ecommerce/service/ProductService.java ===
+package com.ecommerce.service;
+
+import com.ecommerce.model.Product;
+import org.springframework.stereotype.Service;
+import java.util.List;
+
+@Service
+public class ProductService {
+    // Métodos CRUD para productos
+}
+
+// === ARCHIVO: src/main/java/com/ecommerce/controller/ProductController.java ===
+package com.ecommerce.controller;
+
+import com.ecommerce.model.Product;
+import com.ecommerce.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import javax.validation.Valid;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/products")
 public class ProductController {
-
     @Autowired
     private ProductService productService;
 
-    @Operation(summary = "Get all products")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Products found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProductDTO.class)))
-    })
-    @GetMapping
-    public ResponseEntity<Page<ProductDTO>> getAllProducts(Pageable pageable) {
-        return ResponseEntity.ok(productService.getAllProducts(pageable));
-    }
-
-    @Operation(summary = "Get product by ID")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Product found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProductDTO.class))),
-        @ApiResponse(responseCode = "404", description = "Product not found")
-    })
-    @GetMapping("/{id}")
-    public ResponseEntity<ProductDTO> getProductById(@PathVariable Long id) {
-        return ResponseEntity.ok(productService.getProductById(id));
-    }
-
-    @Operation(summary = "Create a new product")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "Product created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProductDTO.class)))
-    })
-    @PostMapping
-    public ResponseEntity<ProductDTO> createProduct(@Valid @RequestBody ProductDTO productDTO) {
-        return new ResponseEntity<>(productService.createProduct(productDTO), HttpStatus.CREATED);
-    }
-
-    @Operation(summary = "Update a product")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Product updated", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProductDTO.class))),
-        @ApiResponse(responseCode = "404", description = "Product not found")
-    })
-    @PutMapping("/{id}")
-    public ResponseEntity<ProductDTO> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductDTO productDTO) {
-        return ResponseEntity.ok(productService.updateProduct(id, productDTO));
-    }
-
-    @Operation(summary = "Delete a product")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "204", description = "Product deleted"),
-        @ApiResponse(responseCode = "404", description = "Product not found")
-    })
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
-        productService.deleteProduct(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
+    // Endpoints CRUD para productos
 }
-// === ARCHIVO: src/main/java/com/example/api/controller/ProductController.java ===
 
-package com.example.api.service;
+// === ARCHIVO: src/main/java/com/ecommerce/security/SecurityConfig.java ===
+package com.ecommerce.security;
 
-import com.example.api.dto.ProductDTO;
-import com.example.api.entity.Product;
-import com.example.api.repository.ProductRepository;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import javax.persistence.EntityNotFoundException;
-import java.util.List;
-import java.util.stream.Collectors;
-
-@Service
-public class ProductService {
-
-    @Autowired
-    private ProductRepository productRepository;
-
-    @Autowired
-    private ModelMapper modelMapper;
-
-    public Page<ProductDTO> getAllProducts(Pageable pageable) {
-        return productRepository.findAll(pageable).map(this::convertToDTO);
-    }
-
-    public ProductDTO getProductById(Long id) {
-        Product product = productRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Product not found"));
-        return convertToDTO(product);
-    }
-
-    public ProductDTO createProduct(ProductDTO productDTO) {
-        Product product = convertToEntity(productDTO);
-        product = productRepository.save(product);
-        return convertToDTO(product);
-    }
-
-    public ProductDTO updateProduct(Long id, ProductDTO productDTO) {
-        Product product = productRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Product not found"));
-        modelMapper.map(productDTO, product);
-        product = productRepository.save(product);
-        return convertToDTO(product);
-    }
-
-    public void deleteProduct(Long id) {
-        productRepository.deleteById(id);
-    }
-
-    private ProductDTO convertToDTO(Product product) {
-        return modelMapper.map(product, ProductDTO.class);
-    }
-
-    private Product convertToEntity(ProductDTO productDTO) {
-        return modelMapper.map(productDTO, Product.class);
-    }
-}
-// === ARCHIVO: src/main/java/com/example/api/service/ProductService.java ===
-
-package com.example.api.repository;
-
-import com.example.api.entity.Product;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
-@Repository
-public interface ProductRepository extends JpaRepository<Product, Long> {
-    Page<Product> findAll(Pageable pageable);
-}
-// === ARCHIVO: src/main/java/com/example/api/repository/ProductRepository.java ===
-
-package com.example.api.security;
-
-import com.example.api.security.jwt.JwtTokenFilter;
-import com.example.api.security.jwt.JwtTokenProvider;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
-
-    @Autowired
-    private JwtTokenProvider jwtTokenProvider;
-
+public class SecurityConfig {
     @Bean
-    @Override
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.inMemoryAuthentication()
-           .withUser("user")
-           .password(passwordEncoder().encode("password"))
-           .roles("USER");
-        auth.inMemoryAuthentication()
-           .withUser("admin")
-           .password(passwordEncoder().encode("admin"))
-           .roles("ADMIN");
-    }
-
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.httpBasic().disable()
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
            .csrf().disable()
-           .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-           .and()
            .authorizeRequests()
-           .antMatchers("/api/auth/**").permitAll()
-           .antMatchers("/api/products/**").hasRole("USER")
-           .antMatchers("/api/admin/**").hasRole("ADMIN")
-           .anyRequest().authenticated()
+               .antMatchers("/api/auth/**").permitAll()
+               .anyRequest().authenticated()
            .and()
-           .addFilterBefore(new JwtTokenFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+           .oauth2ResourceServer().jwt();
+        return http.build();
     }
 }
-// === ARCHIVO: src/main/java/com/example/api/security/SecurityConfig.java ===
-
-package com.example.api.exception;
-
-import com.example.api.dto.ErrorDTO;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.context.request.WebRequest;
-
-@ControllerAdvice
-public class ApiExceptionHandler {
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorDTO> handleGlobalException(Exception ex, WebRequest request) {
-        ErrorDTO errorDTO = new ErrorDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", ex.getMessage());
-        return new ResponseEntity<>(errorDTO, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ErrorDTO> handleEntityNotFoundException(EntityNotFoundException ex, WebRequest request) {
-        ErrorDTO errorDTO = new ErrorDTO(HttpStatus.NOT_FOUND.value(), "Not Found", ex.getMessage());
-        return new ResponseEntity<>(errorDTO, HttpStatus.NOT_FOUND);
-    }
-}
-// === ARCHIVO: src/main/java/com/example/api/exception/ApiExceptionHandler.java ===
-
-server:
-  port: 8080
-
-spring:
-  datasource:
-    url: jdbc:h2:mem:testdb
-    driverClassName: org.h2.Driver
-    username: sa
-    password: 
-  jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
-    show-sql: true
-    hibernate:
-      ddl-auto: update
-  security:
-    user:
-      name: user
-      password: password
-
-openApi:
-  title: API de Productos
-  version: 1.0
-  description: API REST para gestión de productos en e-commerce
-  contact:
-    name: API Support
-    url: http://www.example.com/support
-    email: support@example.com
 
 // === ARCHIVO: src/main/resources/application.yml ===
+spring:
+  application:
+    name: ecommerce-api
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: https://example.com/.well-known/jwks.json
 
-openapi: 3.0.0
-info:
-  title: API de Productos
-  version: 1.0
-  description: API REST para gestión de productos en e-commerce
-servers:
-  - url: http://localhost:8080/api
-paths:
-  /api/products:
-    get:
-      summary: Obtener todos los productos
-      operationId: getAllProducts
-      responses:
-        '200':
-          description: Productos encontrados
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ProductDTO'
-    post:
-      summary: Crear un nuevo producto
-      operationId: createProduct
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ProductDTO'
-      responses:
-        '201':
-          description: Producto creado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductDTO'
-  /api/products/{id}:
-    get:
-      summary: Obtener producto por ID
-      operationId: getProductById
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: Producto encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductDTO'
-        '404':
-          description: Producto no encontrado
-    put:
-      summary: Actualizar producto
-      operationId: updateProduct
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ProductDTO'
-      responses:
-        '200':
-          description: Producto actualizado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductDTO'
-        '404':
-          description: Producto no encontrado
-    delete:
-      summary: Eliminar producto
-      operationId: deleteProduct
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '204':
-          description: Producto eliminado
-        '404':
-          description: Producto no encontrado
-components:
-  schemas:
-    ProductDTO:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-        price:
-          type: number
-          format: double
-        description:
-          type: string
+// === ARCHIVO: src/test/java/com/ecommerce/service/ProductServiceTest.java ===
+package com.ecommerce.service;
 
-// === ARCHIVO: src/main/resources/openapi.yaml ===
-
-package com.example.api.service;
-
-import com.example.api.dto.ProductDTO;
-import com.example.api.entity.Product;
-import com.example.api.repository.ProductRepository;
-import org.junit.jupiter.api.BeforeEach;
+import com.ecommerce.model.Product;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
-@ExtendWith(MockitoExtension.class)
-public class ProductServiceTest {
-
-    @Mock
-    private ProductRepository productRepository;
-
-    @Mock
-    private ModelMapper modelMapper;
-
-    @InjectMocks
+@SpringBootTest
+class ProductServiceTest {
+    @Autowired
     private ProductService productService;
 
-    private ProductDTO productDTO;
-    private Product product;
-
-    @BeforeEach
-    public void setUp() {
-        productDTO = new ProductDTO();
-        productDTO.setName("Product 1");
-        productDTO.setPrice(100.0);
-        productDTO.setDescription("Description 1");
-
-        product = new Product();
-        product.setName(productDTO.getName());
-        product.setPrice(productDTO.getPrice());
-        product.setDescription(productDTO.getDescription());
-    }
+    @MockBean
+    private ProductRepository productRepository;
 
     @Test
-    public void testGetAllProducts() {
-        Page<Product> productPage = new PageImpl<>(Collections.singletonList(product));
-        when(productRepository.findAll((Pageable) any())).thenReturn(productPage);
-        when(modelMapper.map(product, ProductDTO.class)).thenReturn(productDTO);
-
-        Page<ProductDTO> result = productService.getAllProducts(Pageable.unpaged());
-        assertEquals(1, result.getTotalElements());
-    }
-
-    @Test
-    public void testGetProductById() {
-        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        when(modelMapper.map(product, ProductDTO.class)).thenReturn(productDTO);
-
-        ProductDTO result = productService.getProductById(1L);
-        assertEquals(productDTO.getName(), result.getName());
-    }
-
-    @Test
-    public void testCreateProduct() {
-        when(modelMapper.map(productDTO, Product.class)).thenReturn(product);
-        when(productRepository.save(product)).thenReturn(product);
-        when(modelMapper.map(product, ProductDTO.class)).thenReturn(productDTO);
-
-        ProductDTO result = productService.createProduct(productDTO);
-        assertEquals(productDTO.getName(), result.getName());
+    void testCreateProduct() {
+        Product product = new Product();
+        Mockito.when(productRepository.save(product)).thenReturn(product);
+        productService.createProduct(product);
+        Mockito.verify(productRepository, Mockito.times(1)).save(product);
     }
 }
-// === ARCHIVO: src/test/java/com/example/api/service/ProductServiceTest.java ===
-
-FROM openjdk:21-jdk-slim AS build
-WORKDIR /app
-COPY..
-RUN./mvnw clean package -DskipTests
-
-FROM openjdk:21-jdk-slim
-COPY --from=build /app/target/api-0.0.1-SNAPSHOT.jar app.jar
-EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
 
 // === ARCHIVO: docker/Dockerfile ===
+FROM openjdk:21-jdk-slim AS build
+WORKDIR /app
+COPY. /app
+RUN./mvnw package -DskipTests
 
-.mvn/
-target/
-*.log
+FROM openjdk:21-jdk-slim AS runtime
+COPY --from=build /app/target/ecommerce-api.jar /app/ecommerce-api.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "/app/ecommerce-api.jar"]
 
-// === ARCHIVO: docker/.dockerignore ===
+// === ARCHIVO: src/main/java/com/ecommerce/exception/GlobalExceptionHandler.java ===
+package com.ecommerce.exception;
 
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.http.ResponseEntity;
+
+@ControllerAdvice
+public class GlobalExceptionHandler {
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleException(Exception ex) {
+        return ResponseEntity.status(500).body(ex.getMessage());
+    }
+}
+
+// === ARCHIVO: src/main/java/com/ecommerce/config/OpenApiConfig.java ===
+package com.ecommerce.config;
+
+import org.springdoc.core.GroupedOpenApi;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class OpenApiConfig {
+    @Bean
+    public GroupedOpenApi publicApi() {
+        return GroupedOpenApi.builder()
+               .group("ecommerce")
+               .pathsToMatch("/api/**")
+               .build();
+    }
+}
 ```
